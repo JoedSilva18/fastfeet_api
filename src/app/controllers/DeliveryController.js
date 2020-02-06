@@ -1,5 +1,8 @@
 import * as Yup from 'yup';
 import Delivery from '../models/Delivery';
+import Deliveryman from '../models/Deliveryman';
+import Queue from '../../lib/Queue';
+import CreateMail from '../jobs/CreateMail';
 
 class DeliveryController {
   async store(req, res) {
@@ -19,6 +22,12 @@ class DeliveryController {
     }
 
     const delivery = await Delivery.create(req.body);
+    const deliveryman = await Deliveryman.findByPk(req.body.deliveryman_id);
+
+    Queue.add(CreateMail.key, {
+      delivery,
+      deliveryman,
+    });
 
     return res.json(delivery);
   }
